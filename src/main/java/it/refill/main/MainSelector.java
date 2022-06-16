@@ -19,7 +19,7 @@ public class MainSelector {
         try {
             scelta = Integer.parseInt(args[0]);
         } catch (Exception e) {
-            scelta = 0;
+            scelta = 1;
         }
 
         switch (scelta) {
@@ -32,6 +32,7 @@ public class MainSelector {
                     new BranchConfiguration().setVisible(true);
                 });
             } catch (Exception e) {
+                e.printStackTrace();
             }
             break;
 

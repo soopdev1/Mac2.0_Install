@@ -131,7 +131,7 @@ public class Install {
                     String sql;
                     String sql1;
                     ResultSet rs1;
-                    ArrayList<String> elencocolonne = new ArrayList();
+                    ArrayList<String> elencocolonne = new ArrayList<>();
                     String tablename = elencotabelle.get(i);
 
                     if (tablename.equals("agenzie")
