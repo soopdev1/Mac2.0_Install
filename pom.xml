@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>it.refill</groupId>
+    <groupId>rc.so</groupId>
     <artifactId>Mac_Install</artifactId>
     <version>2.0-2021</version>
     <packaging>jar</packaging>
@@ -9,14 +9,14 @@
         <repository>
             <id>my-repo1</id>
             <name>Ugent</name>
-            <url>http://genesis.ugent.be/maven2/</url>
+            <url>https://genesis.ugent.be/maven2/</url>
         </repository>
     </repositories>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>31.0.1-jre</version>
+            <version>31.1-jre</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -28,13 +28,13 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.10.13</version>
+            <version>2.12.2</version>
             <type>jar</type>
         </dependency>        
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.8.0</version>
+            <version>3.9.0</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -45,12 +45,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.27</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <version>2.7.4</version>
+            <version>8.0.30</version>
         </dependency>
         <dependency>
             <groupId>net.jimmc</groupId>
@@ -65,19 +60,19 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.17.1</version>
+            <version>2.19.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.17.1</version>
+            <version>2.19.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.17.1</version>
+            <version>2.19.0</version>
             <type>jar</type>
         </dependency>
     </dependencies>    
@@ -97,7 +92,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        it.refill.main.MainSelector
+                                        rc.so.main.MainSelector
                                     </mainClass>
                                 </manifest>
                             </archive>

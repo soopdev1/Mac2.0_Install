@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.refill.engine;
+package rc.so.engine;
 
-import it.refill.db.DBFiliale;
-import it.refill.db.DBHost;
+import rc.so.db.DBFiliale;
+import rc.so.db.DBHost;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;

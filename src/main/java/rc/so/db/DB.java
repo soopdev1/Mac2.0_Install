@@ -3,16 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.refill.db;
+package rc.so.db;
 
-import it.refill.engine.Oper;
-import it.refill.util.Aggiornamenti_mod;
-import it.refill.util.Rate_history;
-import it.refill.util.Util;
-import static it.refill.util.Util.generaId;
-import static it.refill.util.Util.parseStringDate;
-import static it.refill.util.Util.patternsqldate;
-
+import rc.so.engine.Oper;
+import rc.so.util.Util;
+import static rc.so.util.Util.generaId;
+import static rc.so.util.Util.parseStringDate;
+import static rc.so.util.Util.patternsqldate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -22,22 +19,41 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Properties;
 import org.joda.time.DateTime;
+import static rc.so.util.Util.rb;
 
 /**
  *
  * @author srotella
  */
-public class DBHost {
+public class DB {
 
     private Connection conn = null;
-
     private final String user = "maccorp";
     private final String pwd = "M4cc0Rp";
-    private final String drivername = "org.mariadb.jdbc.Driver";
-    private final String typedb = "mariadb";
 
-    public DBHost(String host) {
+    public DB() {
+        String drivername = rb.getString("db.driver");
+        String typedb = rb.getString("db.tipo");
+        String host = rb.getString("db.ip") + "/maccorp";
         try {
+            if (Util.test) {
+                if (Util.italia) {
+                    host = rb.getString("db.ip") + "/maccorp";
+                } else if (Util.cz) {
+                    host = rb.getString("db.ip") + "/maccorpcz";
+                } else if (Util.uk) {
+                    host = rb.getString("db.ip") + "/maccorpuk";
+                }
+            } else {
+                if (Util.italia) {
+                    host = rb.getString("db.ip") + "/maccorpita";
+                } else if (Util.cz) {
+                    host = rb.getString("db.ip") + "/maccorpczprod";
+                } else if (Util.uk) {
+                    host = rb.getString("db.ip") + "/maccorpukprod";
+                }
+            }
+
             Class.forName(drivername).newInstance();
             Properties p = new Properties();
             p.put("user", user);
@@ -45,15 +61,18 @@ public class DBHost {
             p.put("useUnicode", "true");
             p.put("characterEncoding", "UTF-8");
             p.put("useSSL", "false");
-            p.put("rewriteBatchedStatements", "true");
-            p.put("relaxAutoCommit", "true");
+            p.put("connectTimeout", "1000");
+            p.put("useUnicode", "true");
+            p.put("useJDBCCompliantTimezoneShift", "true");
+            p.put("useLegacyDatetimeCode", "false");
+            p.put("serverTimezone", "Europe/Rome");
             this.conn = DriverManager.getConnection("jdbc:" + typedb + ":" + host, p);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    public DBHost(Connection conn) {
+    public DB(Connection conn) {
         try {
             this.conn = conn;
         } catch (Exception ex) {
@@ -78,8 +97,9 @@ public class DBHost {
     public ResultSet getValuteForMonitor() {
         try {
             Statement stmt = conn.createStatement();
-            return stmt.executeQuery("SELECT valuta, de_valuta, cambio_bce, buy_std_type, buy_std_value, buy_std, sell_std_value, sell_std_type, sell_std "
+            stmt.executeQuery("SELECT valuta, de_valuta, cambio_bce, buy_std_type, buy_std_value, buy_std, sell_std_value, sell_std_type, sell_std "
                     + "FROM valute where fg_valuta_corrente='0'");
+            stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -212,29 +232,6 @@ public class DBHost {
         return li;
     }
 
-    public boolean execute_agg_copia(String cod, String filiale, String dt_start, String type, String action, String user) {
-        try {
-            String sqlins = "INSERT INTO aggiornamenti_mod VALUES (?,?,?,?,?,?,?,?)";
-            PreparedStatement ps = this.conn.prepareStatement(sqlins);
-            ps.setString(1, cod);
-            ps.setString(2, filiale);
-            ps.setString(3, dt_start);
-            ps.setString(4, "0");
-            ps.setString(5, type);
-            ps.setString(6, action);
-            ps.setString(7, user);
-            ps.setString(8, now().toString("yyyy-MM-dd HH:mm:ss"));
-
-            int x = ps.executeUpdate();
-            return x > 0;
-
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return false;
-
-    }
-
     public boolean execute_agg(String type, Oper oper) {
         try {
             if (type.equalsIgnoreCase("PS")) {
@@ -302,8 +299,6 @@ public class DBHost {
         return out;
     }
 
-    
-
     public void insert_indicerischio(String msg, String dt) {
         try {
             String ins = "INSERT INTO indice_rischio VALUES (?,?,?,?)";
@@ -360,7 +355,6 @@ public class DBHost {
             String sql = "SET GLOBAL max_allowed_packet = 1024*1024*14;";
             PreparedStatement ps = this.conn.prepareStatement(sql);
             //      System.out.println(ps);
-
             ps.executeQuery();
 
         } catch (SQLException e) {
@@ -381,142 +375,6 @@ public class DBHost {
             return "";
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-        return null;
-    }
-
-    public String[] getExcelValuteFile() {
-        try {
-            String sql = "SELECT cod,fileout,dt_start,user FROM excel_upload WHERE stato='0' order by data";
-            PreparedStatement ps = this.conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                String[] out = {rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)};
-                return out;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public ArrayList<String> list_branchcode() {
-        ArrayList<String> li = new ArrayList<>();
-        try {
-            ResultSet rs = this.conn.createStatement().executeQuery("SELECT distinct(cod) FROM branch where fg_annullato='0' ORDER BY cod");
-            while (rs.next()) {
-                li.add(rs.getString(1));
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return li;
-    }
-
-    public boolean getPresenzaValuta(String valuta, String bce, String dt_start, String user, ArrayList<String> al) {
-        try {
-            ResultSet rs = conn.createStatement().executeQuery("select valuta from valute where valuta='" + valuta + "'");
-
-            return rs.next();
-
-//            if (!rs.next()) {
-////                for(int i = 0;i<al.size();i++){
-////                    
-////                    String ins = "insert into valute (filiale,valuta,codice_uic_divisa,de_valuta,cambio_acquisto,cambio_vendita,cambio_bce,de_messaggio) values ('" + al.get(i) + "','" + valuta + "','','-','','','" + bce + "','-')";
-////                    
-////                    insert_aggiornamenti_mod(new Aggiornamenti_mod(
-////                            
-////                        Util.generaId(50), value, dt_val, "0",
-////                        ty, psstring, username, dtoper));
-////                }
-////                
-////                insertValue_agg(null, ins, null, dt_start, user,al);
-//            }
-//            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public void insert_aggiornamenti_mod(Aggiornamenti_mod am) {
-        try {
-            String ins = "INSERT INTO aggiornamenti_mod VALUES (?,?,?,?,?,?,?,?)";
-            PreparedStatement ps = this.conn.prepareStatement(ins);
-            ps.setString(1, am.getCod());
-            ps.setString(2, am.getFiliale());
-            ps.setString(3, am.getDt_start());
-            ps.setString(4, am.getFg_stato());
-            ps.setString(5, am.getTipost());
-            ps.setString(6, am.getAction());
-            ps.setString(7, am.getUser());
-            ps.setString(8, am.getTimestamp());
-            ps.execute();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-    
-    public boolean update_change_BCE(String filiale, String valuta, String valore, String dtstart, String username, ArrayList<String> al, String dtoper) {
-        String upd = "update valute set cambio_bce = '" + valore + "' where valuta = '" + valuta + "' AND filiale = '" + filiale + "'";
-        insert_aggiornamenti_mod(new Aggiornamenti_mod(
-                Util.generaId(50), filiale, dtstart, "0",
-                "ST", upd, username, dtoper));
-        //insertValue_agg(null, upd, filiale, dtstart, username, al);
-        return true;
-    }
-
-    public boolean insert_ratehistory(Rate_history rh, String dtoper, String dtstart) {
-        try {
-            String ins = "INSERT INTO rate_history VALUES (?,?,?,?,?,?,?)";
-            PreparedStatement ps = this.conn.prepareStatement(ins);
-            ps.setString(1, rh.getCodic());
-            ps.setString(2, rh.getFiliale());
-            ps.setString(3, rh.getValuta());
-            ps.setString(4, rh.getTipomod());
-            ps.setString(5, rh.getModify());
-            ps.setString(6, rh.getUser());
-            ps.setString(7, rh.getDt_mod());
-//            ps.execute();
-            insert_aggiornamenti_mod(new Aggiornamenti_mod(
-                    Util.generaId(50), rh.getFiliale(), dtstart, "0",
-                    "PS", ps.toString(), "service", dtoper));
-            return true;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return false;
-    }
-
-    public String getNow() {
-        try {
-            String sql = "SELECT now()";
-            PreparedStatement ps = this.conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getString(1);
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return new DateTime().toString("yyyy-MM-dd HH:mm:ss");
-    }
-    
-    public ResultSet getDatiPerFiliale(String tabella){
-        try {
-            String sql ="SELECT * FROM "+tabella+" WHERE filiale = '000'";
-            return this.conn.prepareStatement(sql).executeQuery();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-    public ResultSet getDatiPerFiliale(String tabella,String filiale){
-        try {
-            String sql ="SELECT * FROM "+tabella+" WHERE filiale = '"+filiale+"'";
-            return this.conn.prepareStatement(sql).executeQuery();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
         }
         return null;
     }

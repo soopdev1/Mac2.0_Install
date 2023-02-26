@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package it.refill.db;
+package rc.so.db;
 
-import it.refill.engine.Oper;
-import it.refill.util.Util;
-import static it.refill.util.Util.generaId;
-import static it.refill.util.Util.parseStringDate;
-import static it.refill.util.Util.patternsqldate;
+import rc.so.engine.Oper;
+import static rc.so.util.Util.generaId;
+import static rc.so.util.Util.parseStringDate;
+import static rc.so.util.Util.patternsqldate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -24,53 +23,54 @@ import org.joda.time.DateTime;
  *
  * @author srotella
  */
-public class DB {
+public class DBFiliale {
 
+    
+    private String host = "";
+    private static final String pwd = "root";
+    private static final String user = "root";
+    
     private Connection conn = null;
-    private final String user = "maccorp";
-    private final String pwd = "M4cc0Rp";
 
-//  private final String host = "//172.18.17.41:3306/maccorp";
-//  private final String host = "//172.18.17.41:3306/maccorpita";
-//    private final String host = "//172.18.17.41:3306/maccorpukprod";
-//    private final 
-    private final String drivername = "org.mariadb.jdbc.Driver";
-    private final String typedb = "mariadb";
-
-    public DB() {
-        String host = "//172.18.17.41:3306/maccorp";
+    public DBFiliale() {
         try {
-            if (Util.test) {
-                if (Util.italia) {
-                    host = "//172.18.17.41:3306/maccorp";
-                } else if (Util.cz) {
-                    host = "//172.18.17.41:3306/maccorpcz";
-                } else if (Util.uk) {
-                    host = "//172.18.17.41:3306/maccorpuk";
-                }
-            } else {
-                if (Util.italia) {
-                    host = "//172.18.17.41:3306/maccorpita";
-                } else if (Util.cz) {
-                    host = "//172.18.17.41:3306/maccorpczprod";
-                } else if (Util.uk) {
-                    host = "//172.18.17.41:3306/maccorpukprod";
-                }
-            }
-
-            Class.forName(drivername).newInstance();
+            Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
             Properties p = new Properties();
             p.put("user", user);
             p.put("password", pwd);
-            p.put("rewriteBatchedStatements", "true");
-            p.put("relaxAutoCommit", "true");
-            conn = DriverManager.getConnection("jdbc:" + typedb + ":" + host, p);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException ex) {
+            p.put("useUnicode", "true");
+            p.put("characterEncoding", "UTF-8");
+            p.put("useSSL", "false");
+            p.put("connectTimeout", "1000");
+            p.put("useUnicode", "true");
+            p.put("useJDBCCompliantTimezoneShift", "true");
+            p.put("useLegacyDatetimeCode", "false");
+            p.put("serverTimezone", "Europe/Rome");
+            this.conn = DriverManager.getConnection("jdbc:mysql://localhost:3306", p);
+        } catch (Exception ex) {
             ex.printStackTrace();
+            System.err.println("ERRORE CONNESSIONE DB FILIALE");
         }
     }
 
-    public DB(Connection conn) {
+    public DBFiliale(String ip, String filiale) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+            host = "//" + ip + ":3306/maccorp";
+            Properties p = new Properties();
+            p.put("user", user);
+            p.put("password", pwd);
+            p.put("useUnicode", "true");
+            p.put("characterEncoding", "UTF-8");
+            p.put("useSSL", "false");
+            this.conn = DriverManager.getConnection("jdbc:mysql:" + host, p);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException ex) {
+            ex.printStackTrace();
+            System.err.println("ERRORE CONNESSIONE DB FILIALE");
+        }
+    }
+
+    public DBFiliale(Connection conn) {
         try {
             this.conn = conn;
         } catch (Exception ex) {
@@ -95,9 +95,8 @@ public class DB {
     public ResultSet getValuteForMonitor() {
         try {
             Statement stmt = conn.createStatement();
-            stmt.executeQuery("SELECT valuta, de_valuta, cambio_bce, buy_std_type, buy_std_value, buy_std, sell_std_value, sell_std_type, sell_std "
+            return stmt.executeQuery("SELECT valuta, de_valuta, cambio_bce, buy_std_type, buy_std_value, buy_std, sell_std_value, sell_std_type, sell_std "
                     + "FROM valute where fg_valuta_corrente='0'");
-            stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -219,9 +218,25 @@ public class DB {
         ArrayList<String[]> li = new ArrayList<>();
         try {
             String sql = "SELECT cod,dt_start,tipost,action FROM aggiornamenti_mod where filiale = '" + filiale + "' AND fg_stato='" + stato + "' ORDER BY timestamp,cod";
+            System.out.println(sql);
             ResultSet rs = this.conn.createStatement().executeQuery(sql);
             while (rs.next()) {
                 String[] output = {rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)};
+                li.add(output);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return li;
+    }
+
+    public ArrayList<String[]> list_aggiornamenti_mod_div(String filiale, String stato) {
+        ArrayList<String[]> li = new ArrayList<>();
+        try {
+            String sql = "SELECT cod,filiale,dt_start,fg_stato,tipost,action,user FROM aggiornamenti_mod where filiale <> '" + filiale + "' AND fg_stato='" + stato + "' ORDER BY timestamp,cod";
+            ResultSet rs = this.conn.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                String[] output = {rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6), rs.getString(7)};
                 li.add(output);
             }
         } catch (SQLException ex) {
@@ -240,6 +255,7 @@ public class DB {
                 if (oper.getType().equals("UPD")) {
                     return ps.executeUpdate() > 0;
                 } else if (oper.getType().equals("DEL") || oper.getType().equals("INS")) {
+                    System.out.println(ps);
                     ps.execute();
                     return true;
                 }
@@ -297,6 +313,7 @@ public class DB {
         return out;
     }
 
+    
     public void insert_indicerischio(String msg, String dt) {
         try {
             String ins = "INSERT INTO indice_rischio VALUES (?,?,?,?)";
@@ -338,10 +355,9 @@ public class DB {
     public ResultSet getData(String sql) {
         try {
             PreparedStatement ps = this.conn.prepareStatement(sql);
-            //      System.out.println(ps);
-
             ResultSet rs = ps.executeQuery();
             return rs;
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -361,20 +377,67 @@ public class DB {
 
     }
 
-    public String getIpFiliale(String filiale) {
+    public String[] addInfo(ResultSet rs1, String sql1, int colsize) {
+        String[] out = new String[3];
         try {
-            String sql = "SELECT ip FROM dbfiliali WHERE filiale = ?";
-            PreparedStatement ps = this.conn.prepareStatement(sql);
-            ps.setString(1, filiale);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getString(1);
+            PreparedStatement ps = this.conn.prepareStatement(sql1);
+            for (int i = 0; i < colsize; i++) {
+                ps.setString(i + 1, rs1.getString(i + 1));
             }
-            return "";
+            // System.out.println(ps);
+            out[0] = "false";
+            out[1] = ps.toString();
+            // System.out.println(ps);
+            if (ps.executeUpdate() > 0) {
+                out[0] = "true";
+            }
+            out[2] = "";
         } catch (SQLException e) {
             e.printStackTrace();
+            out[2] = e.getMessage();
+            out[0] = "false";
         }
-        return null;
+
+        return out;
+
+    }
+
+    public String[] addInfo(String sql1) {
+        String[] out = new String[3];
+        try {
+            PreparedStatement ps = this.conn.prepareStatement(sql1);
+
+            // System.out.println(ps);
+            out[0] = "false";
+            out[1] = ps.toString();
+            //System.out.println(ps);            
+            if (ps.executeUpdate() > 0) {
+                out[0] = "true";
+            }
+            out[2] = "";
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out[2] = e.getMessage();
+            out[0] = "false";
+        }
+
+        return out;
+
+    }
+
+    public boolean eseuitruncate(String tablename) {
+
+        try {
+            String sql = "truncate table " + tablename;
+            PreparedStatement ps = this.conn.prepareStatement(sql);
+
+            return ps.execute();
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+
     }
 
 }

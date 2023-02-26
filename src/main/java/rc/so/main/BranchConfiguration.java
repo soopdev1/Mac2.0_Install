@@ -1,19 +1,18 @@
-package it.refill.main;
+package rc.so.main;
 
-import it.refill.engine.Install;
-import it.refill.db.DBFiliale;
-import it.refill.db.DBHost;
-import it.refill.util.Util;
-import static it.refill.util.Util.createClientShortcut;
-import static it.refill.util.Util.createServerShortcut;
-import static it.refill.util.Util.createStartShortcut;
+import rc.so.engine.Install;
+import rc.so.db.DBFiliale;
+import rc.so.db.DBHost;
+import rc.so.util.Util;
+import static rc.so.util.Util.createClientShortcut;
+import static rc.so.util.Util.createServerShortcut;
+import static rc.so.util.Util.createStartShortcut;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -27,15 +26,12 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import org.apache.commons.io.FileUtils;
+import static rc.so.util.Util.rb;
 
 /**
  *
@@ -54,30 +50,35 @@ public class BranchConfiguration extends javax.swing.JFrame {
         if (!Util.test) {
             this.testing.setVisible(false);
         }
-        
+
+        this.jButton1.setEnabled(false);
+        this.jButton2.setEnabled(false);
+        this.jButton3.setEnabled(false);
+//        this.jPanel2.setVisible(false);
+
         if (Util.test) {
             if (Util.italia) {
                 this.jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/Italy-icon.png"))); // NOI18N
-                this.hostdir.setText("//172.18.17.41:3306/maccorp");
+                this.hostdir.setText(rb.getString("db.ip") + "/maccorp");
             } else if (Util.cz) {
                 jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/Czech-Republic-icon.png"))); // NOI18N
-                this.hostdir.setText("//172.18.17.41:3306/maccorpcz");
+                this.hostdir.setText(rb.getString("db.ip") + "/maccorpcz");
             } else if (Util.uk) {
                 jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/United-Kingdom-icon.png"))); // NOI18N
-                this.hostdir.setText("//172.18.17.41:3306/maccorpuk");
+                this.hostdir.setText(rb.getString("db.ip") + "/maccorpuk");
             }
         } else {
             if (Util.italia) {
                 jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/Italy-icon.png"))); // NOI18N
-                this.hostdir.setText("//172.18.17.41:3306/maccorpita");
+                this.hostdir.setText(rb.getString("db.ip") + "/maccorpita");
             } else if (Util.cz) {
                 jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/Czech-Republic-icon.png"))); // NOI18N
-                this.hostdir.setText("//172.18.17.41:3306/maccorpczprod");
+                this.hostdir.setText(rb.getString("db.ip") + "/maccorpczprod");
             } else if (Util.uk) {
                 jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/United-Kingdom-icon.png"))); // NOI18N
-                this.hostdir.setText("//172.18.17.41:3306/maccorpukprod");
+                this.hostdir.setText(rb.getString("db.ip") + "/maccorpukprod");
             }
-        }        
+        }
     }
 
     /**
@@ -333,16 +334,19 @@ public class BranchConfiguration extends javax.swing.JFrame {
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(95, 95, 95))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel3)
                                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(branchcod, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(hostdir, javax.swing.GroupLayout.PREFERRED_SIZE, 226, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addComponent(branchcod, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addComponent(hostdir, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE))))))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -459,7 +463,6 @@ public class BranchConfiguration extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton7ActionPerformed
 
 
-
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
         // TODO add your handling code here:
 
@@ -474,33 +477,32 @@ public class BranchConfiguration extends javax.swing.JFrame {
                     db.closeDB();
                     if (myip != null && !myip.equals("")) {
                         if (Desktop.isDesktopSupported()) {
-                            File ing = new File("C:\\Windows\\System32\\drivers\\etc\\hosts");
-                            FileWriter fw = new FileWriter(ing, true);
-                            BufferedWriter bw = new BufferedWriter(fw);
-                            PrintWriter out = new PrintWriter(bw);
-                            out.println(" ");
-                            out.println("#seta");
-                            out.println("172.18.17.35   it.mactwo.loc");
-                            out.println("172.18.17.35   test.mactwo.loc");
-                            out.println("172.18.17.35   testuk.mactwo.loc");
-                            out.println("172.18.17.35   testcz.mactwo.loc");
-                            out.println("172.18.17.35   uk.mactwo.loc");
-                            out.println("172.18.17.35   cz.mactwo.loc");
-                            out.println("172.18.17.35   ticket.mactwo.loc");
-                            out.println("172.18.17.35   ticket.mactwo.loc");
-                            out.println("172.18.17.38   macftp.mactwo.loc");
-                            out.println("172.18.17.45   macdb01.mactwo.loc");
-                            out.println("172.18.17.46   macdb02.mactwo.loc");
-                            out.println("172.18.17.41   machaproxy01.mactwo.loc");
-                            out.close();
-                            bw.close();
-                            fw.close();
-
-                            //crea il file .bat che setta la variabile JAVA_HOME
-                            PrintWriter writer = new PrintWriter("C:\\InstallazioneFiliale_NEW\\opt\\Maccorp\\setjavahome.bat", "UTF-8");
-                            writer.println("set JAVA_HOME=" + jLabel7.getText());
-                            writer.println("");
-                            writer.close();
+                            try (//                            File ing = new File("C:\\Windows\\System32\\drivers\\etc\\hosts");
+                                    //                            FileWriter fw = new FileWriter(ing, true);
+                                    //                            BufferedWriter bw = new BufferedWriter(fw);
+                                    //                            PrintWriter out = new PrintWriter(bw);
+                                    //                            out.println(" ");
+                                    //                            out.println("#seta");
+                                    //                            out.println("172.18.17.35   it.mactwo.loc");
+                                    //                            out.println("172.18.17.35   test.mactwo.loc");
+                                    //                            out.println("172.18.17.35   testuk.mactwo.loc");
+                                    //                            out.println("172.18.17.35   testcz.mactwo.loc");
+                                    //                            out.println("172.18.17.35   uk.mactwo.loc");
+                                    //                            out.println("172.18.17.35   cz.mactwo.loc");
+                                    //                            out.println("172.18.17.35   ticket.mactwo.loc");
+                                    //                            out.println("172.18.17.35   ticket.mactwo.loc");
+                                    //                            out.println("172.18.17.38   macftp.mactwo.loc");
+                                    //                            out.println("172.18.17.45   macdb01.mactwo.loc");
+                                    //                            out.println("172.18.17.46   macdb02.mactwo.loc");
+                                    //                            out.println("172.18.17.41   machaproxy01.mactwo.loc");
+                                    //                            out.close();
+                                    //                            bw.close();
+                                    //                            fw.close();
+                                    //crea il file .bat che setta la variabile JAVA_HOME
+                                     PrintWriter writer = new PrintWriter("C:\\InstallazioneFiliale_NEW\\opt\\Maccorp\\setjavahome.bat", "UTF-8")) {
+                                writer.println("set JAVA_HOME=" + jLabel7.getText());
+                                writer.println("");
+                            }
 
                             //copy directory
                             File dir1 = new File("C:\\Maccorp\\");
